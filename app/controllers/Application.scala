@@ -16,4 +16,8 @@ class Application extends Controller {
     channel.Top.get.map(x => Ok(x.toString))
   }
 
+  def speedTest(times: Int) = Action {
+    Ok(tester.Tester.checkSpeed("http://localhost:9000/news", times).toString)
+  }
+
 }
