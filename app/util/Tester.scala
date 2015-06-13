@@ -20,7 +20,7 @@ object Tester {
       val end = System.currentTimeMillis()
       (end - start).toInt
     }
-    val time = times.foldRight(0)(_ + _)
+    val time = times.foldRight(0)(_ + _) / 1000
     SpeedResult(entryName, howMany, time)
   }
 
