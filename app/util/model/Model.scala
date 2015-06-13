@@ -25,7 +25,8 @@ case object Es extends Language
 case object Zh extends Language
 case object Ko extends Language
 
-trait Channel[A] {
+trait Channel {
+  def toHTML: String
 }
 
 trait News[A] {

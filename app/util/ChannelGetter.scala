@@ -10,7 +10,7 @@ import scala.xml.XML
 
 package channel {
 
-  abstract class ChannelGetter[C] {
+  abstract class ChannelGetter[C <: model.Channel] {
 
     /* 抽象メンバー */
     // ニュースのURL

@@ -15,7 +15,11 @@ case class Channel (
   val description: String,
   val lastBuildDate: Date,
   val items: List[News]
-)
+) extends model.Channel {
+  def toHTML = {
+    title + "\n" + items.mkString(", ")
+  }
+}
 object Channel {
   implicit val reader = new XMLReader[Channel]  {
     def read(s: String): Channel = {
