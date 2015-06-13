@@ -31,11 +31,9 @@ package channel {
       case None =>
         for {
           xmlString <- WS.url(endPoint + entryName).get()
+          channel <- Future(reader.read(xmlString.body))
         }
-        yield {
-          val channel = reader.read(xmlString.body)
-          saveCache(channel)
-        }
+        yield saveCache(channel)
     }
 
     private def saveCache(channel: C): Option[C] = {
