@@ -34,7 +34,7 @@ case class News (
   guid: String
 )
 object News {
-  def parse(s: String): Future[News] = Future {
+  def parse(s: String): News = {
     val news = XML.loadString(s)
     val title = (news \ "title").text
     val link = (news \ "link").text

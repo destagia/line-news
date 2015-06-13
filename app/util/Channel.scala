@@ -19,13 +19,10 @@ package model {
     val items: List[News]
   )
   object Channel {
-    def parse(s: String): Future[Channel] = for {
-      xmlChannel <- Future(XML.loadString(s) \ "channel")
-      xmlItems <- Future((xmlChannel \ "item").toSeq)
-      items <- sequence(xmlItems.map(x => News.parse(x.toString)))
-    }
-    yield
-    {
+    def parse(s: String): Channel = {
+      val xmlChannel = XML.loadString(s) \ "channel"
+      val xmlItems = (xmlChannel \ "item").toSeq
+      val items = xmlItems.map(x => News.parse(x.toString))
       val lang = Language.parse((xmlChannel \ "language").text)
       val title = (xmlChannel \ "title").text
       val link = (xmlChannel \ "link").text
@@ -58,9 +55,12 @@ package channel {
       case None =>
         for {
           xmlString <- WS.url("http://news.livedoor.com/topics/rss/" + entryName).get()
-          channel <- Channel.parse(xmlString.body)
         }
-        yield saveCache(Some(channel))
+        yield {
+          val channel = Channel.parse(xmlString.body)
+          // saveCache(Some(channel))
+          Some(channel)
+        }
     }
 
     private def saveCache(channel: Option[Channel]): Option[Channel] = {
