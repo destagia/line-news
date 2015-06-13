@@ -12,11 +12,16 @@ package channel {
 
   abstract class ChannelGetter[C] {
 
+    /* 抽象メンバー */
     // ニュースのURL
     def endPoint: String
 
     // ニュースの名前を定義する
     def entryName: String
+
+    // キャッシュの更新方法を実装する
+    def updateCache(implicit reader: XMLReader[C]): Future[Unit] =
+      requestChannel(saveCache)
 
     // ニュースを一度読み込んだらキャッシュしておく。
     // lastBuildDateの変更があればキャッシュを更新する
@@ -28,17 +33,25 @@ package channel {
     */
     def get(implicit reader: XMLReader[C]): Future[Option[C]] = cache match {
       case Some(_) => Future(cache)
-      case None =>
-        for {
-          xmlString <- WS.url(endPoint + entryName).get()
-          channel <- Future(reader.read(xmlString.body))
+      case None => requestChannel { channel =>
+          saveCache(channel)
+          Some(channel)
         }
-        yield saveCache(channel)
     }
 
-    private def saveCache(channel: C): Option[C] = {
+    /*
+    Httpでニュースを取得し，CのXMLReaderでCにパース
+    その後関数で自由に操作できる。
+    */
+    private def requestChannel[A](afterGet: C => A)(implicit reader: XMLReader[C]): Future[A] =
+      for {
+        xmlString <- WS.url(endPoint + entryName).get()
+        channel <- Future(reader.read(xmlString.body))
+      }
+      yield afterGet(channel)
+
+    private def saveCache(channel: C) {
       cache = Some(channel)
-      cache
     }
   }
 
