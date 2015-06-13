@@ -1,0 +1,15 @@
+logs
+target
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/RUNNING_PID
+/activator-launch-1.2.12.jar
+/activator
+/.ensime
+/.ensime_lucene
+/test
+*.sublime-project
+*.sublime-workspace
