@@ -1,4 +1,4 @@
-package util
+package util.model
 
 import java.util.{Date, Calendar}
 import java.text.SimpleDateFormat
@@ -39,8 +39,8 @@ object News {
     val title = (news \ "title").text
     val link = (news \ "link").text
     val description = (news \ "description").text
-    val mobile = 1//(news \ "mobile").text.toInt
-    val date = null// JavaDate.parse((news \ "pubDate").text)
+    val mobile = (news \ "mobile").text.toInt
+    val date = util.JavaDate.parse((news \ "pubDate").text)
     val guid = (news \ "guid").text
     News(title, link, description, mobile, date, guid)
   }

@@ -6,11 +6,9 @@ import play.api.Play.current
 import scala.concurrent.Future
 import scala.concurrent.Future._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.xml.XML
 
-package channel {
-  import scala.xml.XML
-  import util.News
-
+package model {
   case class Channel (
     val lang: Language,
     val title: String,
@@ -36,27 +34,41 @@ package channel {
       val lastBuildDate = JavaDate.parse((xmlChannel \ "lastBuildDate").text)
       Channel(lang, title, link, generator, description, lastBuildDate, items.toList)
     }
+  }
 }
 
-   private abstract class ChannelGetter {
+package channel {
+  import util.model._
+
+  abstract class ChannelGetter {
+
+    // ニュースの名前を定義する
     def entryName: String
 
-    @volatile var cache: Option[Channel] = None
+    // ニュースを一度読み込んだらキャッシュしておく。
+    // lastBuildDateの変更があればキャッシュを更新する
+    @volatile private var cache: Option[Channel] = None
 
     /*
     Http通信の失敗，パース時になんらかのエラーが出る可能性があるので
     データはOptionに包む。
     */
-    def getChannel:Future[Option[Channel]] = cache match {
+    def get: Future[Option[Channel]] = cache match {
       case Some(_) => Future(cache)
       case None =>
         for {
           xmlString <- WS.url("http://news.livedoor.com/topics/rss/" + entryName).get()
           channel <- Channel.parse(xmlString.body)
         }
-        yield Some(channel)
+        yield saveCache(Some(channel))
+    }
 
+    private def saveCache(channel: Option[Channel]): Option[Channel] = {
+      cache = channel
+      cache
     }
   }
+
+  object Top extends ChannelGetter { def entryName = "top.xml" }
 
 }
