@@ -5,6 +5,8 @@
 # Home page
 GET     /                           controllers.Application.index
 GET     /news                       controllers.Application.news
+
+
 GET     /test/:time                 controllers.Application.speedTest(time: Int)
 
 # Map static resources from the /public folder to the /assets URL path

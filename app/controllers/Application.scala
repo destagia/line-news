@@ -13,7 +13,7 @@ class Application extends Controller {
   }
 
   def news = Action.async {
-    channel.Top.get.map(x => Ok(x.toString))
+    channel.livedoor.Top.get.map(x => Ok(x.toString))
   }
 
   def speedTest(times: Int) = Action {

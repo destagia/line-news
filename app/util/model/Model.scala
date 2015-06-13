@@ -25,23 +25,8 @@ case object Es extends Language
 case object Zh extends Language
 case object Ko extends Language
 
-case class News (
-  title: String,
-  link: String,
-  description: String,
-  mobile: Int,
-  date: Date,
-  guid: String
-)
-object News {
-  def parse(s: String): News = {
-    val news = XML.loadString(s)
-    val title = (news \ "title").text
-    val link = (news \ "link").text
-    val description = (news \ "description").text
-    val mobile = (news \ "mobile").text.toInt
-    val date = util.JavaDate.parse((news \ "pubDate").text)
-    val guid = (news \ "guid").text
-    News(title, link, description, mobile, date, guid)
-  }
+trait Channel[A] {
+}
+
+trait News[A] {
 }
