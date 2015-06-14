@@ -12,8 +12,10 @@ class Application extends Controller {
     Ok(views.html.index())
   }
 
-  def news = Action.async {
-    channel.livedoor.Top.get.map(x => Ok(x.map(_.toHTML).toString))
+  def news() = Action.async {
+    // channel.livedoor.Top.checkChannelUpdated
+    // channel.livedoor.Top.get.map(x => Ok(x.map(_.toHTML).toString))
+    Future(Ok)
   }
 
   def speedTest(times: Int) = Action {
