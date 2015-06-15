@@ -82,7 +82,7 @@ trait News {
   lazy val relatives = {
     for {
       keys <- keyPhrase
-      relative <- util.Channel.searchRelativeNews(id, keys)
+      relative <- util.Channel.searchRelativeNews(this, keys)
     }
     yield
       relative
