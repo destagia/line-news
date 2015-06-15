@@ -19,19 +19,6 @@ package channel {
     // ニュースの名前を定義する
     def entryName: String
 
-    // キャッシュの更新方法
-    // 数分おきに更新するだけよりもいい方法があれば
-    // 子クラスでオーバーライドして実装する
-    def updateCache(xmlString: String, reader: XMLReader[C]): Unit =
-      for {
-        channel <- cache
-        latestNews <- channel.newsCache.headOption
-      }
-      yield {
-        val xml = XML.loadString(xmlString) \ "channel"
-
-      }
-
     // キャッシュの更新を許可する間隔
     val updateDuration = 15 * 60 * 1000
 
@@ -69,6 +56,17 @@ package channel {
     }
 
     /*
+    cacheからChannelを取り出して，util.model.Channel#updateNewsCache
+    を実行する。
+    */
+    private def updateCache(xmlString: String, reader: XMLReader[C]): Unit =
+      for {
+        channel <- cache
+      }
+      yield
+        channel.updateNewsCache(XML.loadString(xmlString) \ "channel")
+
+    /*
     HttpでXMLを取得し，String型でResponse#bodyを取り出す。
     その後，引数に渡される関数でmapして返す。
     */
@@ -98,14 +96,57 @@ object Channel {
   import model._
   import util.channel.ChannelGetter
 
+  type RelativeNews = (News, News, News)
+  def searchRelativeNews(selfId: Int, keys: List[keyphrase.Result]): Future[RelativeNews] =
+    for {
+      news <- util.Channel.getAllChannelNews
+    }
+    yield {
+      val res = keys.foldRight(List[News]()) {(a, b) =>
+        news.filter { n =>
+          n.contentString.contains(a.keyPhrase) &&
+          n.id != selfId
+        } ++ b
+      }
+      (res(0), res(1), res(2))
+    }
+
+  def getAllChannelNews: Future[List[model.News]] =
+    Livedoor.foldRight(Future(List[model.News]())){(a, b) =>
+      for {
+        x <- a._2.get
+        y <- b
+      }
+      yield {
+        x.map(_.getAllNews.filterNot(
+          n => y.map(_.guid).contains(n.guid))
+        ).getOrElse(Nil) ++ y
+      }
+    }
+
   abstract class LivedoorGetter extends ChannelGetter[livedoor.Channel] {
     def endPoint = "http://news.livedoor.com/topics/rss/"
   }
   val Livedoor = Map(
     "top" -> new LivedoorGetter { def entryName = "top.xml" },
-    "dom" -> new LivedoorGetter { def entryName = "dom.xml" }
-    // object Int extends LivedoorGetter { def entryName = "int.xml" }
-    // object Eco extends LivedoorGetter { def entryName = "eco.xml" }
+    "dom" -> new LivedoorGetter { def entryName = "dom.xml" },
+    "int" -> new LivedoorGetter { def entryName = "int.xml" },
+    "eco" -> new LivedoorGetter { def entryName = "eco.xml" },
+    "ent" -> new LivedoorGetter { def entryName = "ent.xml" },
+    "spo" -> new LivedoorGetter { def entryName = "spo.xml" },
+    "52" -> new LivedoorGetter { def entryName = "52.xml" },
+    "gourmet" -> new LivedoorGetter { def entryName = "gourmet.xml" },
+    "love" -> new LivedoorGetter { def entryName = "love.xml" },
+    "trend" -> new LivedoorGetter { def entryName = "trend.xml" }
   )
+
+  abstract class YahooGetter extends ChannelGetter[yahoo.Channel] {
+    def endPoint = "http://rss.dailynews.yahoo.co.jp/fc"
+  }
+  val Yahoo = Map {
+    "top" -> new YahooGetter { def entryName = "rss.xml" }
+    "domestic" -> new YahooGetter { def entryName = "domestic/rss.xml" }
+    "world" -> new YahooGetter { def entryName = "world/rss.xml" }
+  }
 }
 

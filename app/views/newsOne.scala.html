@@ -1,0 +1,9 @@
+@(news: util.model.News, relatives: (util.model.News, util.model.News, util.model.News))
+@main("Livedoorまとめ - " + news.title) {
+  <h3>@news.title<h3>
+  <ul>
+    <li>@relatives._1.title</li>
+    <li>@relatives._2.title</li>
+    <li>@relatives._3.title</li>
+  </ul>
+}

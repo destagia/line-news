@@ -6,6 +6,9 @@ import util.model.Language
 import java.util.Date
 import scala.xml.XML
 import util.JavaDate
+import scala.concurrent.{Future, Await}
+import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext.Implicits.global
 
 case class Channel (
   val lang: Language,
@@ -34,7 +37,6 @@ object Channel {
   implicit val reader = new XMLReader[Channel]  {
     def read(s: String): Channel = {
       val xmlChannel = XML.loadString(s) \ "channel"
-
       val lang = Language.parse((xmlChannel \ "language").text)
       val title = (xmlChannel \ "title").text
       val link = (xmlChannel \ "link").text
@@ -42,10 +44,8 @@ object Channel {
       val description = (xmlChannel \ "description").text
       val lastBuildDate = JavaDate.parse((xmlChannel \ "lastBuildDate").text)
       val channel = Channel(lang, title, link, generator, description, lastBuildDate)
-
-      val xmlItems = (xmlChannel \ "item").toSeq
-      xmlItems.foreach { x =>
-         channel.newsCache += channel.newsRead(x.toString)
+      (xmlChannel \ "item").foreach {
+        n => channel.newsCache += channel.newsRead(n.toString())
       }
       channel
     }
@@ -60,6 +60,6 @@ case class News (
   date: Date,
   guid: String
 ) extends model.News {
-  def getInfo = model.NewsInfo(title, date, guid)
-  def contentString = title + "\n" + description
+  def contentString =
+    title + "\n" + XML.loadString("<xml>" + description + "</xml>").text
 }

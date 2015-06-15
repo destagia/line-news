@@ -1,6 +1,8 @@
 package util.model
 
 import java.util.Date
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.xml.{XML, NodeSeq}
 import scala.collection.mutable.{ListBuffer => MList}
 
@@ -24,44 +26,66 @@ case object Ko extends Language
 trait Channel {
   // ニュースのキャッシュ
   val newsCache: MList[News] = MList[News]()
-  @volatile var latestNewsGuid: Option[String] = None
 
   def toHTML: String
-  // def getAllNews: List[NewsInfo]
 
+  /*
+  ニュースをパースして，さらに関連記事を見つける必要があるので
+  戻り値がFutureで包まれている
+  */
   def newsRead(xmlString: String): News
 
-  def updateNewsCache(xmlString: String) {
-    val xml = XML.loadString(xmlString) \ "channel"
-    val nodes = xml \ "item"
+  def getAllNews: List[News] = newsCache.toList
 
-    def run(guid: String, nodes: NodeSeq): Unit =
-      for(node <- nodes.headOption) yield
-        if ((node \ "guid").text != guid) {
-          newsCache += newsRead(node.toString)
-          if (nodes.size > 2)
-            run(guid, nodes.tail)
-        }
+  def updateNewsCache(xml: NodeSeq) = {
 
-    for(head <- newsCache.headOption)
-      yield run(head.getInfo.guid, nodes)
+    def newNews(guid: String, nodes: NodeSeq): List[News] = {
+      nodes.headOption match {
+        case None => Nil
+        case Some(node) =>
+          if ((node \ "guid").text != guid) {
+            val fNews = newsRead(node.toString)
+            if (nodes.size > 2)
+              fNews :: newNews(guid, nodes.tail)
+            else
+              List(fNews)
+          }
+          else
+            Nil
+      }
+    }
+
+    lazy val nodes = { xml \ "item" }
+    // 先頭のguidから新しい分だけをキャッシュに追加する仕組み
+    newsCache.headOption match {
+      case None =>
+      case Some(news) =>
+        newNews(news.guid, nodes).foreach(_ +=: newsCache)
+    }
   }
 }
 
-/*
-Webサイトに関わらず，必ず持っているはずの基本情報
-*/
-case class NewsInfo (
-  title: String,
-  date: Date,
-  guid: String
-)
-
 trait News {
-  def getInfo: NewsInfo
 
   /*
   関連記事を算出する際，このニュースの検索対象となる文章
   */
   def contentString: String
+
+  def title: String
+  def link: String
+  def date: Date
+  def guid: String
+
+  lazy val id: Int = util.ID.getUnique
+
+  lazy val relatives = {
+    for {
+      keys <- util.KeyPhrase.get(contentString)
+      relative <- util.Channel.searchRelativeNews(id, keys)
+    }
+    yield
+      relative
+  }
+
 }

@@ -5,7 +5,8 @@
 # Home page
 GET     /                           controllers.Application.index
 GET     /news                       controllers.Application.news
-
+GET     /news/:id                   controllers.Application.newsOne(id: Int)
+GET     /news/all                   controllers.Application.allNews
 
 GET     /test/:time                 controllers.Application.speedTest(time: Int)
 
