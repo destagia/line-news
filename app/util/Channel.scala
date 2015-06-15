@@ -16,7 +16,7 @@ object Channel {
   /*
   あるニュースに対して関連度のたかそうなNewsを検索する
   */
-  def searchRelativeNews(target: model.News, keys: List[keyphrase.Result]): Future[List[model.News]] =
+  def searchRelativeNews(target: model.News, keys: List[String]): Future[List[model.News]] =
     for {
       news <- util.Channel.getAllChannelNews
     }
@@ -27,7 +27,7 @@ object Channel {
           if ( buffer.size < 3
             && n.id != target.id
             && n.link != target.link
-            && n.contentString.contains(key.keyPhrase)
+            && n.contentString.contains(key)
             && buffer.find(_.guid == n.guid).map(x => false).getOrElse(true))
             buffer += n
         }
@@ -58,9 +58,9 @@ object Channel {
   def getAllChannelNews: Future[List[model.News]] = for {
     yn <- getAllNewsFromChannel(YahooNews)
     l <- getAllNewsFromChannel(Livedoor)
-    y <- getAllNewsFromChannel(Yahoo)
+    // y <- getAllNewsFromChannel(Yahoo) 主旨と違う
   }
-  yield (l ++ y ++ yn).foldRight(List[model.News]()) {(x, xs) =>
+  yield (l ++ yn).foldRight(List[model.News]()) {(x, xs) =>
     xs.find(n => n.link == x.link) match {
       case Some(_) => xs
       case None => x :: xs
@@ -125,7 +125,5 @@ object Channel {
     "sanspo" -> new YahooNewsGetter { def entryName = "sanspo-c_spo.xml" },
     "nishispo" -> new YahooNewsGetter { def entryName = "nishispo-c_spo.xml" },
     "nksports" -> new YahooNewsGetter { def entryName = "nksports-c_spo.xml" }
-
   )
 }
-

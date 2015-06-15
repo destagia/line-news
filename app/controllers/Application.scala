@@ -12,13 +12,15 @@ class Application extends Controller {
     Ok(views.html.index())
   }
 
-  def news = Action.async {
-    Channel.getAllNewsFromChannel(Channel.Livedoor).map {x =>
-      Ok(views.html.news(x))
+  def news(tag: String) = Action.async {
+    for {
+      newsOpt <- Channel.Livedoor(tag).get
     }
+    yield
+      Ok(views.html.news(newsOpt.map(_.getAllNews).getOrElse(Nil)))
   }
 
-  def newsOne(id: Int) = Action.async {
+  def newsOne(tag: String, id: Int) = Action.async {
     Channel.getAllNewsFromChannel(Channel.Livedoor).flatMap { news =>
       news.find(_.id == id) match {
         case Some(n) =>

@@ -4,12 +4,30 @@
 
 <html lang="en">
     <head>
-        <title>@title</title>
+        <title>@title - Livedoorまとめ！</title>
         <link rel="stylesheet" media="screen" href="@routes.Assets.versioned("stylesheets/main.css")">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
         <script src="@routes.Assets.versioned("javascripts/hello.js")" type="text/javascript"></script>
     </head>
     <body>
-        @content
+        <header>
+          <h1>Livedoorまとめ！</h1>
+          <p>ライブドアニュースから最新情報をお届けします。</p>
+        </header>
+        <nav>
+          <ul>
+            <li><a href="/top">トップ</a></li>
+            <li><a href="/dom">国内</a></li>
+            <li><a href="/int">海外</a></li>
+            <li><a href="/ent">エンタメ</a></li>
+            <li><a href="/spo">スポーツ</a></li>
+          </ul>
+        </nav>
+        <main>
+          @content
+        </main>
+        <footer>
+          CopyRight miyatin All Right Reserved 2015
+        </footer>
     </body>
 </html>

@@ -4,11 +4,8 @@
 
 # Home page
 GET     /                           controllers.Application.index
-GET     /news                       controllers.Application.news
-GET     /news/:id                   controllers.Application.newsOne(id: Int)
-GET     /news/all                   controllers.Application.allNews
-
-GET     /test/:time                 controllers.Application.speedTest(time: Int)
+GET     /:tag/:id                   controllers.Application.newsOne(tag: String, id: Int)
+GET     /:tag                       controllers.Application.news(tag: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

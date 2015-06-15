@@ -1,6 +1,6 @@
 @(news: List[util.model.News])
 
-@main("Livedoorまとめ") {
+@main("ニュース一覧") {
   @for(n <- news) {
     <h4><a href="/news/@n.id">@n.title</a></h4>
   }

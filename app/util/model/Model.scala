@@ -77,11 +77,18 @@ trait News {
 
   lazy val id: Int = util.ID.getUnique
 
-  val keyPhrase = util.KeyPhrase.get(contentString)
+  val keyPhrase: Future[List[keyphrase.Result]] =
+    util.KeyPhrase.get(contentString)
+
+  lazy val similarKeys = for {
+      keys <- keyPhrase.map(_.take(5).map(_.keyPhrase))
+      similars <- util.Hatena.getSimilar(keys.toArray)
+    }
+    yield keys ++ similars
 
   lazy val relatives = {
     for {
-      keys <- keyPhrase
+      keys <- similarKeys
       relative <- util.Channel.searchRelativeNews(this, keys)
     }
     yield
