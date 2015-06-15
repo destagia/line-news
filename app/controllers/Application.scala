@@ -13,8 +13,8 @@ class Application extends Controller {
   }
 
   def news = Action.async {
-    Channel.Livedoor("top").get.map {x =>
-      Ok(views.html.news(x.map(_.getAllNews).getOrElse(Nil)))
+    Channel.getAllChannelNews.map {x =>
+      Ok(views.html.news(x))
     }
   }
 
@@ -25,7 +25,13 @@ class Application extends Controller {
           for
             (relatives <- n.relatives)
           yield
-            Ok(views.html.newsOne(n, relatives))
+            n match {
+              case model.livedoor.News(title, link, description, _, date, _) =>
+                Ok(views.html.newsOne(n.title, description, link, relatives))
+              case _ =>
+                NotFound("this is not livedoor news")
+            }
+
         case None => Future(NotFound("not found id"))
       }
     }

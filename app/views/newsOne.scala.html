@@ -1,9 +1,10 @@
-@(news: util.model.News, relatives: (util.model.News, util.model.News, util.model.News))
-@main("Livedoorまとめ - " + news.title) {
-  <h3>@news.title<h3>
+@(title: String, description: String, link: String, relatives: (util.model.News, util.model.News, util.model.News))
+@main("Livedoorまとめ - " + title) {
+  <h3>@title<h3>
+  <div>@Html(description)</div>
   <ul>
-    <li>@relatives._1.title</li>
-    <li>@relatives._2.title</li>
-    <li>@relatives._3.title</li>
+    <li><a href="@relatives._1.link">@relatives._1.title</a></li>
+    <li><a href="@relatives._2.link">@relatives._2.title</a></li>
+    <li><a href="@relatives._3.link">@relatives._3.title</a></li>
   </ul>
 }

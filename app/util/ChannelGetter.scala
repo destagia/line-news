@@ -102,41 +102,35 @@ object Channel {
       news <- util.Channel.getAllChannelNews
     }
     yield {
+      println(keys)
       val res = keys.foldRight(List[News]()) {(a, b) =>
         news.filter { n =>
           n.contentString.contains(a.keyPhrase) &&
           n.id != selfId
         } ++ b
       }
+
       (res(0), res(1), res(2))
     }
 
-  def getAllChannelNews: Future[List[model.News]] =
-    Livedoor.foldRight(Future(List[model.News]())){(a, b) =>
-      for {
-        x <- a._2.get
-        y <- b
-      }
-      yield {
-        x.map(_.getAllNews.filterNot(
-          n => y.map(_.guid).contains(n.guid))
-        ).getOrElse(Nil) ++ y
-      }
-    } flatMap { l =>
-      Yahoo.foldRight(Future(List[model.News]())){(a, b) =>
+  def getAllNewsFromChannel[C <: model.Channel]
+    (m: Map[String, ChannelGetter[C]])(implicit r: XMLReader[C]) =
+      m.foldRight(Future(List[model.News]())){(a, b) =>
         for {
           x <- a._2.get
           y <- b
         }
         yield {
-          x.map(_.getAllNews.filterNot(
-            n => y.map(_.guid).contains(n.guid))
-          ).getOrElse(Nil) ++ y
+          x.map(_.getAllNews).getOrElse(Nil) ++ y
         }
-      } map { y =>
-        l ++ y
       }
-    }
+
+  def getAllChannelNews: Future[List[model.News]] = for {
+    l <- getAllNewsFromChannel(Livedoor)
+    y <- getAllNewsFromChannel(Yahoo)
+  }
+  yield l ++ y
+
 
   abstract class LivedoorGetter extends ChannelGetter[livedoor.Channel] {
     def endPoint = "http://news.livedoor.com/topics/rss/"
@@ -160,7 +154,13 @@ object Channel {
   val Yahoo = Map(
     "top" -> new YahooGetter { def entryName = "rss.xml" },
     "domestic" -> new YahooGetter { def entryName = "domestic/rss.xml" },
-    "world" -> new YahooGetter { def entryName = "world/rss.xml" }
+    "world" -> new YahooGetter { def entryName = "world/rss.xml" },
+    "entertainment" -> new YahooGetter { def entryName = "entertainment/rss.xml" },
+    "sports" -> new YahooGetter { def entryName = "sports/rss.xml" },
+    "computer" -> new YahooGetter { def entryName = "computer/rss.xml" },
+    "local" -> new YahooGetter { def entryName = "local/rss.xml" },
+    "economy" -> new YahooGetter { def entryName = "economy/rss.xml" },
+    "science" -> new YahooGetter { def entryName = "science/rss.xml" }
   )
 }
 
