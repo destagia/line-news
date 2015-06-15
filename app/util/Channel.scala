@@ -6,17 +6,40 @@ Channelオブジェクトに実際のニュースを取得するためのChannel
 package util
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.Future
+import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 object Channel {
   import model._
   import util.ChannelGetter
 
+  // def searchRelativeNews(target: model.News, keys: List[String]): Future[List[model.News]] =
+  //   for {
+  //     news <- util.Channel.getAllChannelNews
+  //     list <- Future.sequence(news.map(n => n.similarKeys.map(ks => (ks, n))))
+  //   }
+  //   yield {
+  //     val buffer = new ListBuffer[model.News]()
+  //     keys.foreach { key =>
+  //       list.foreach { t =>
+  //         val (ss, n) = t
+  //         if (buffer.size < 3
+  //          && n.id != target.id
+  //          && n.link != target.link
+  //          && ss.contains(key)
+  //          && buffer.find(_.guid == n.guid).map(x => false).getOrElse(true))
+  //             buffer += n
+  //       }
+  //     }
+  //     buffer.toList
+  //   }
+
   /*
   あるニュースに対して関連度のたかそうなNewsを検索する
   */
   def searchRelativeNews(target: model.News, keys: List[String]): Future[List[model.News]] =
+
     for {
       news <- util.Channel.getAllChannelNews
     }
@@ -45,9 +68,7 @@ object Channel {
           x <- a._2.get
           y <- b
         }
-        yield {
-          x.map(_.getAllNews).getOrElse(Nil) ++ y
-        }
+        yield x.map(_.getAllNews).getOrElse(Nil) ++ y
       }
 
   /*

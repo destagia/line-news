@@ -23,6 +23,18 @@ case object Es extends Language
 case object Zh extends Language
 case object Ko extends Language
 
+sealed trait Genre
+case object トップ extends Genre
+case object 国内 extends Genre
+case object 海外 extends Genre
+case object IT経済 extends Genre
+case object 芸能 extends Genre
+case object スポーツ extends Genre
+case object 映画 extends Genre
+case object グルメ extends Genre
+case object 女子 extends Genre
+case object トレンド extends Genre
+
 trait Channel {
   // ニュースのキャッシュ
   val newsCache: MList[News] = MList[News]()
@@ -38,7 +50,6 @@ trait Channel {
   def getAllNews: List[News] = newsCache.toList
 
   def updateNewsCache(xml: NodeSeq) = {
-
     def newNews(guid: String, nodes: NodeSeq): List[News] = {
       nodes.headOption match {
         case None => Nil
@@ -54,13 +65,10 @@ trait Channel {
             Nil
       }
     }
-
     lazy val nodes = { xml \ "item" }
     // 先頭のguidから新しい分だけをキャッシュに追加する仕組み
-    newsCache.headOption match {
-      case None =>
-      case Some(news) =>
-        newNews(news.guid, nodes).foreach(_ +=: newsCache)
+    newsCache.headOption map { news =>
+      newNews(news.guid, nodes).foreach(_ +=: newsCache)
     }
   }
 }
@@ -70,28 +78,29 @@ trait News {
   関連記事を算出する際，このニュースの検索対象となる文章
   */
   def contentString: String
+
+  /*
+  ニュースの実装必須項目
+  */
   def title: String
   def link: String
   def date: Date
   def guid: String
 
-  lazy val id: Int = util.ID.getUnique
-
+  val id: Int = util.ID.getUnique
   val keyPhrase: Future[List[keyphrase.Result]] =
     util.KeyPhrase.get(contentString)
 
   lazy val similarKeys = for {
       keys <- keyPhrase.map(_.take(5).map(_.keyPhrase))
       similars <- util.Hatena.getSimilar(keys.toArray)
+      _ <- Future(println(similars ++ keys))
     }
     yield keys ++ similars
 
-  lazy val relatives = {
-    for {
+  lazy val relatives = for {
       keys <- similarKeys
       relative <- util.Channel.searchRelativeNews(this, keys)
     }
-    yield
-      relative
-  }
+    yield relative
 }
