@@ -13,13 +13,13 @@ class Application extends Controller {
   }
 
   def news = Action.async {
-    Channel.getAllChannelNews.map {x =>
+    Channel.getAllNewsFromChannel(Channel.Livedoor).map {x =>
       Ok(views.html.news(x))
     }
   }
 
   def newsOne(id: Int) = Action.async {
-    Channel.getAllChannelNews.flatMap { news =>
+    Channel.getAllNewsFromChannel(Channel.Livedoor).flatMap { news =>
       news.find(_.id == id) match {
         case Some(n) =>
           for
@@ -27,7 +27,7 @@ class Application extends Controller {
           yield
             n match {
               case model.livedoor.News(title, link, description, _, date, _) =>
-                Ok(views.html.newsOne(n.title, description, link, relatives))
+                Ok(views.html.newsOne(n.title, description + "(" + n.id + ")", link, relatives))
               case _ =>
                 NotFound("this is not livedoor news")
             }

@@ -1,6 +1,7 @@
 package util
 
 import java.util.Date
+import scala.collection.mutable.ListBuffer
 import play.api.libs.ws._
 import play.api.Play.current
 import scala.concurrent.Future
@@ -102,15 +103,18 @@ object Channel {
       news <- util.Channel.getAllChannelNews
     }
     yield {
-      println(keys)
-      val res = keys.foldRight(List[News]()) {(a, b) =>
-        news.filter { n =>
-          n.contentString.contains(a.keyPhrase) &&
-          n.id != selfId
-        } ++ b
+      val buffer = ListBuffer[model.News]()
+      keys.foreach { key =>
+        news.foreach { n =>
+          if ( buffer.size < 3
+            && n.id != selfId
+            && n.contentString.contains(key.keyPhrase)
+            && buffer.find(_.guid == n.guid).map(x => false).getOrElse(true))
+            buffer += n
+        }
       }
-
-      (res(0), res(1), res(2))
+      buffer.foreach(x => println(x.title))
+      (buffer(0), buffer(1), buffer(2))
     }
 
   def getAllNewsFromChannel[C <: model.Channel]
@@ -125,12 +129,24 @@ object Channel {
         }
       }
 
+  /*
+  すべてのサイトのすべてのチャンネルからすべてのニュースを拾う。
+  一見重たそうだが，すべてのニュースはキャッシュされているので，
+  そんなに重くない。
+  */
   def getAllChannelNews: Future[List[model.News]] = for {
+    yn <- getAllNewsFromChannel(YahooNews)
     l <- getAllNewsFromChannel(Livedoor)
     y <- getAllNewsFromChannel(Yahoo)
   }
-  yield l ++ y
+  yield (l ++ y ++ yn).foldRight(List[model.News]()) {(x, xs) =>
+    xs.find(n => n.link == x.link) match {
+      case Some(_) => xs
+      case None => x :: xs
+    }
+  }
 
+  val channels = List(Livedoor, Yahoo)
 
   abstract class LivedoorGetter extends ChannelGetter[livedoor.Channel] {
     def endPoint = "http://news.livedoor.com/topics/rss/"
@@ -161,6 +177,35 @@ object Channel {
     "local"         -> new YahooGetter { def entryName = "local/rss.xml" },
     "economy"       -> new YahooGetter { def entryName = "economy/rss.xml" },
     "science"       -> new YahooGetter { def entryName = "science/rss.xml" }
+  )
+
+  abstract class YahooNewsGetter extends ChannelGetter[yahoo.news.Channel] {
+    def endPoint = "http://headlines.yahoo.co.jp/rss/"
+  }
+  val YahooNews = Map(
+    "san-dom" -> new YahooNewsGetter { def entryName = "san-dom.xml" },
+    "nishinp-dom" -> new YahooNewsGetter { def entryName = "nishinp-dom.xml" },
+    "zdn-dom" -> new YahooNewsGetter { def entryName = "zdn_mkt-dom.xml" },
+
+    "afpbbnews" -> new YahooNewsGetter { def entryName = "afpbbnewsv-c_int.xml" },
+    "san-int" -> new YahooNewsGetter { def entryName = "san-c_int.xml" },
+    "asahi-int" -> new YahooNewsGetter { def entryName = "asahik-c_int.xml" },
+    "fuji-int" -> new YahooNewsGetter { def entryName = "ykf-c_int.xml" },
+
+    "sh_mon-bus" -> new YahooNewsGetter { def entryName = "sh_mon-bus.xml" },
+    "asahi-bus" -> new YahooNewsGetter { def entryName = "asahik-bus.xml" },
+    "scn-bus" -> new YahooNewsGetter { def entryName = "scn-bus.xml" },
+
+    "natalieo-ent" -> new YahooNewsGetter { def entryName = "natalieo-c_ent.xml" },
+    "nkgendai-c-ent" -> new YahooNewsGetter { def entryName = "nkgendai-c_ent.xml" },
+    "natalien-ent" -> new YahooNewsGetter { def entryName = "natalien-c_ent.xml" },
+    "zdn-ent" -> new YahooNewsGetter { def entryName = "zdn_n-c_ent.xml" },
+
+    "spnavi-spo" -> new YahooNewsGetter { def entryName = "spnavi-c_spo.xml" },
+    "sanspo" -> new YahooNewsGetter { def entryName = "sanspo-c_spo.xml" },
+    "nishispo" -> new YahooNewsGetter { def entryName = "nishispo-c_spo.xml" },
+    "nksports" -> new YahooNewsGetter { def entryName = "nksports-c_spo.xml" }
+
   )
 }
 

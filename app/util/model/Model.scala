@@ -66,12 +66,10 @@ trait Channel {
 }
 
 trait News {
-
   /*
   関連記事を算出する際，このニュースの検索対象となる文章
   */
   def contentString: String
-
   def title: String
   def link: String
   def date: Date
@@ -79,13 +77,14 @@ trait News {
 
   lazy val id: Int = util.ID.getUnique
 
+  val keyPhrase = util.KeyPhrase.get(contentString)
+
   lazy val relatives = {
     for {
-      keys <- util.KeyPhrase.get(contentString)
+      keys <- keyPhrase
       relative <- util.Channel.searchRelativeNews(id, keys)
     }
     yield
       relative
   }
-
 }
