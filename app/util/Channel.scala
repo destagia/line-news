@@ -14,39 +14,17 @@ object Channel {
   import model._
   import util.ChannelGetter
 
-  // def searchRelativeNews(target: model.News, keys: List[String]): Future[List[model.News]] =
-  //   for {
-  //     news <- util.Channel.getAllChannelNews
-  //     list <- Future.sequence(news.map(n => n.similarKeys.map(ks => (ks, n))))
-  //   }
-  //   yield {
-  //     val buffer = new ListBuffer[model.News]()
-  //     keys.foreach { key =>
-  //       list.foreach { t =>
-  //         val (ss, n) = t
-  //         if (buffer.size < 3
-  //          && n.id != target.id
-  //          && n.link != target.link
-  //          && ss.contains(key)
-  //          && buffer.find(_.guid == n.guid).map(x => false).getOrElse(true))
-  //             buffer += n
-  //       }
-  //     }
-  //     buffer.toList
-  //   }
-
   /*
   あるニュースに対して関連度のたかそうなNewsを検索する
   */
   def searchRelativeNews(target: model.News, keys: List[String]): Future[List[model.News]] =
-
     for {
-      news <- util.Channel.getAllChannelNews
+      cs <- filterChannelsBy(target.channel.genre)
     }
     yield {
       val buffer = ListBuffer[model.News]()
       keys.foreach { key =>
-        news.foreach { n =>
+        cs.map(_.getAllNews).foldRight(List[model.News]())(_ ++ _).foreach { n =>
           if ( buffer.size < 3
             && n.id != target.id
             && n.link != target.link
@@ -62,14 +40,38 @@ object Channel {
   存在するすべてのニュースを取得する
   */
   def getAllNewsFromChannel[C <: model.Channel]
-    (m: Map[String, ChannelGetter[C]])(implicit r: XMLReader[C]) =
-      m.foldRight(Future(List[model.News]())){(a, b) =>
-        for {
-          x <- a._2.get
-          y <- b
-        }
-        yield x.map(_.getAllNews).getOrElse(Nil) ++ y
+    (m: Map[String, ChannelGetter[C]])(implicit r: XMLReader[C]): Future[List[model.News]] =
+      for (cs <- getChannels(m))
+      yield cs.map(_.getAllNews).foldRight(Nil:List[model.News])(_ ++ _)
+
+  def getChannels[C <: model.Channel](mp: Map[String, ChannelGetter[C]])
+    (implicit r: XMLReader[C]): Future[List[model.Channel]] =
+    mp.toList.foldRight(Future(List[model.Channel]())) { (t, xsf) =>
+      for {
+        c <- t._2.get
+        xs <- xsf
       }
+      yield
+        c match {
+          case Some (channel) => channel :: xs
+          case None => xs
+        }
+    }
+
+  /*
+  サイトは関係なく，存在するすべてのチャンネルを集める
+  */
+  def getAllChannel: Future[List[model.Channel]] = for {
+    lc <- getChannels(Livedoor)
+    yc <- getChannels(YahooNews)
+  }
+  yield lc ++ yc
+
+  def filterChannelsBy(genre: Genre): Future[List[model.Channel]] =
+    for {
+      xs <- getAllChannel
+    }
+    yield xs.filter(x => x.genre == genre)
 
   /*
   すべてのサイトのすべてのチャンネルからすべてのニュースを拾う。
@@ -79,7 +81,6 @@ object Channel {
   def getAllChannelNews: Future[List[model.News]] = for {
     yn <- getAllNewsFromChannel(YahooNews)
     l <- getAllNewsFromChannel(Livedoor)
-    // y <- getAllNewsFromChannel(Yahoo) 主旨と違う
   }
   yield (l ++ yn).foldRight(List[model.News]()) {(x, xs) =>
     xs.find(n => n.link == x.link) match {
@@ -88,63 +89,48 @@ object Channel {
     }
   }
 
-
   abstract class LivedoorGetter extends ChannelGetter[livedoor.Channel] {
     def endPoint = "http://news.livedoor.com/topics/rss/"
   }
   val Livedoor = Map(
-    "top"     -> new LivedoorGetter { def entryName = "top.xml" },
-    "dom"     -> new LivedoorGetter { def entryName = "dom.xml" },
-    "int"     -> new LivedoorGetter { def entryName = "int.xml" },
-    "eco"     -> new LivedoorGetter { def entryName = "eco.xml" },
-    "ent"     -> new LivedoorGetter { def entryName = "ent.xml" },
-    "spo"     -> new LivedoorGetter { def entryName = "spo.xml" },
-    "52"      -> new LivedoorGetter { def entryName = "52.xml" },
-    "gourmet" -> new LivedoorGetter { def entryName = "gourmet.xml" },
-    "love"    -> new LivedoorGetter { def entryName = "love.xml" },
-    "trend"   -> new LivedoorGetter { def entryName = "trend.xml" }
+    "top"     -> new LivedoorGetter { def entryName = "top.xml" ; def genre = トップ},
+    "dom"     -> new LivedoorGetter { def entryName = "dom.xml" ; def genre = 国内 },
+    "int"     -> new LivedoorGetter { def entryName = "int.xml" ; def genre = 海外 },
+    "eco"     -> new LivedoorGetter { def entryName = "eco.xml" ; def genre = 経済 },
+    "ent"     -> new LivedoorGetter { def entryName = "ent.xml" ; def genre = 芸能 },
+    "spo"     -> new LivedoorGetter { def entryName = "spo.xml" ; def genre = スポーツ },
+    "52"      -> new LivedoorGetter { def entryName = "52.xml" ; def genre = 映画 },
+    "gourmet" -> new LivedoorGetter { def entryName = "gourmet.xml" ; def genre = グルメ },
+    "love"    -> new LivedoorGetter { def entryName = "love.xml" ; def genre = 女子 },
+    "trend"   -> new LivedoorGetter { def entryName = "trend.xml" ; def genre = トレンド }
   )
 
-  abstract class YahooGetter extends ChannelGetter[yahoo.Channel] {
-    def endPoint = "http://rss.dailynews.yahoo.co.jp/fc/"
-  }
-  val Yahoo = Map(
-    "top"           -> new YahooGetter { def entryName = "rss.xml" },
-    "domestic"      -> new YahooGetter { def entryName = "domestic/rss.xml" },
-    "world"         -> new YahooGetter { def entryName = "world/rss.xml" },
-    "entertainment" -> new YahooGetter { def entryName = "entertainment/rss.xml" },
-    "sports"        -> new YahooGetter { def entryName = "sports/rss.xml" },
-    "computer"      -> new YahooGetter { def entryName = "computer/rss.xml" },
-    "local"         -> new YahooGetter { def entryName = "local/rss.xml" },
-    "economy"       -> new YahooGetter { def entryName = "economy/rss.xml" },
-    "science"       -> new YahooGetter { def entryName = "science/rss.xml" }
-  )
-
-  abstract class YahooNewsGetter extends ChannelGetter[yahoo.news.Channel] {
+  abstract class YahooNewsGetter extends ChannelGetter[yahoo.Channel] {
     def endPoint = "http://headlines.yahoo.co.jp/rss/"
   }
   val YahooNews = Map(
-    "san-dom" -> new YahooNewsGetter { def entryName = "san-dom.xml" },
-    "nishinp-dom" -> new YahooNewsGetter { def entryName = "nishinp-dom.xml" },
-    "zdn-dom" -> new YahooNewsGetter { def entryName = "zdn_mkt-dom.xml" },
+    "san-dom" -> new YahooNewsGetter { def entryName = "san-dom.xml" ; def genre = 国内 },
+    "nishinp-dom" -> new YahooNewsGetter { def entryName = "nishinp-dom.xml" ; def genre = 国内 },
+    "zdn-dom" -> new YahooNewsGetter { def entryName = "zdn_mkt-dom.xml" ; def genre = 国内 },
 
-    "afpbbnews" -> new YahooNewsGetter { def entryName = "afpbbnewsv-c_int.xml" },
-    "san-int" -> new YahooNewsGetter { def entryName = "san-c_int.xml" },
-    "asahi-int" -> new YahooNewsGetter { def entryName = "asahik-c_int.xml" },
-    "fuji-int" -> new YahooNewsGetter { def entryName = "ykf-c_int.xml" },
+    "afpbbnews" -> new YahooNewsGetter { def entryName = "afpbbnewsv-c_int.xml" ; def genre = 海外 },
+    "san-int" -> new YahooNewsGetter { def entryName = "san-c_int.xml" ; def genre = 海外 },
+    "asahi-int" -> new YahooNewsGetter { def entryName = "asahik-c_int.xml" ; def genre = 海外 },
+    "fuji-int" -> new YahooNewsGetter { def entryName = "ykf-c_int.xml" ; def genre = 海外 },
 
-    "sh_mon-bus" -> new YahooNewsGetter { def entryName = "sh_mon-bus.xml" },
-    "asahi-bus" -> new YahooNewsGetter { def entryName = "asahik-bus.xml" },
-    "scn-bus" -> new YahooNewsGetter { def entryName = "scn-bus.xml" },
+    "sh_mon-bus" -> new YahooNewsGetter { def entryName = "sh_mon-bus.xml" ; def genre = 経済 },
+    "asahi-bus" -> new YahooNewsGetter { def entryName = "asahik-bus.xml" ; def genre = 経済 },
+    "scn-bus" -> new YahooNewsGetter { def entryName = "scn-bus.xml" ; def genre = 経済 },
 
-    "natalieo-ent" -> new YahooNewsGetter { def entryName = "natalieo-c_ent.xml" },
-    "nkgendai-c-ent" -> new YahooNewsGetter { def entryName = "nkgendai-c_ent.xml" },
-    "natalien-ent" -> new YahooNewsGetter { def entryName = "natalien-c_ent.xml" },
-    "zdn-ent" -> new YahooNewsGetter { def entryName = "zdn_n-c_ent.xml" },
+    "natalieo-ent" -> new YahooNewsGetter { def entryName = "natalieo-c_ent.xml" ; def genre = 芸能 },
+    "nkgendai-c-ent" -> new YahooNewsGetter { def entryName = "nkgendai-c_ent.xml" ; def genre = 芸能 },
+    "natalien-ent" -> new YahooNewsGetter { def entryName = "natalien-c_ent.xml" ; def genre = 芸能 },
+    "zdn-ent" -> new YahooNewsGetter { def entryName = "zdn_n-c_ent.xml" ; def genre = 芸能 },
 
-    "spnavi-spo" -> new YahooNewsGetter { def entryName = "spnavi-c_spo.xml" },
-    "sanspo" -> new YahooNewsGetter { def entryName = "sanspo-c_spo.xml" },
-    "nishispo" -> new YahooNewsGetter { def entryName = "nishispo-c_spo.xml" },
-    "nksports" -> new YahooNewsGetter { def entryName = "nksports-c_spo.xml" }
+    "spnavi-spo" -> new YahooNewsGetter { def entryName = "spnavi-c_spo.xml" ; def genre = スポーツ },
+    "sanspo" -> new YahooNewsGetter { def entryName = "sanspo-c_spo.xml" ; def genre = スポーツ },
+    "nishispo" -> new YahooNewsGetter { def entryName = "nishispo-c_spo.xml" ; def genre = スポーツ },
+    "nksports" -> new YahooNewsGetter { def entryName = "nksports-c_spo.xml" ; def genre = スポーツ }
   )
+
 }

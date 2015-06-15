@@ -27,7 +27,7 @@ sealed trait Genre
 case object トップ extends Genre
 case object 国内 extends Genre
 case object 海外 extends Genre
-case object IT経済 extends Genre
+case object 経済 extends Genre
 case object 芸能 extends Genre
 case object スポーツ extends Genre
 case object 映画 extends Genre
@@ -35,11 +35,14 @@ case object グルメ extends Genre
 case object 女子 extends Genre
 case object トレンド extends Genre
 
+case class ChannelSet (channel: Channel, genre: Genre)
+
 trait Channel {
   // ニュースのキャッシュ
   val newsCache: MList[News] = MList[News]()
 
   def toHTML: String
+  def genre: Genre
 
   /*
   ニュースをパースして，さらに関連記事を見つける必要があるので
@@ -86,6 +89,7 @@ trait News {
   def link: String
   def date: Date
   def guid: String
+  def channel: Channel
 
   val id: Int = util.ID.getUnique
   val keyPhrase: Future[List[keyphrase.Result]] =

@@ -8,11 +8,12 @@ import scala.xml.XML
 import util.JavaDate
 
 case class Channel (
-  val lang: Language,
-  val title: String,
-  val link: String,
-  val description: String,
-  val pubDate: Date
+  lang: Language,
+  title: String,
+  link: String,
+  description: String,
+  lastBuildDate: Date,
+  genre: model.Genre
 ) extends model.Channel {
   def toHTML = {
     title + "\n" + newsCache.mkString(", ")
@@ -23,20 +24,19 @@ case class Channel (
     val title = (news \ "title").text
     val link  = (news \ "link").text
     val date  = util.JavaDate.parse((news \ "pubDate").text)
-    val guid  = (news \ "guid").text
-    News(title, link, date, guid)
+    News(title, link, date, this)
   }
 }
 object Channel {
   implicit val reader = new XMLReader[Channel]  {
-    def read(s: String): Channel = {
+    def read(genre: model.Genre)(s: String): Channel = {
       val xmlChannel = XML.loadString(s) \ "channel"
       val lang = Language.parse((xmlChannel \ "language").text)
       val title = (xmlChannel \ "title").text
       val link = (xmlChannel \ "link").text
       val description = (xmlChannel \ "description").text
-      val pubDate = JavaDate.parse((xmlChannel \ "pubDate").text)
-      val channel = Channel(lang, title, link, description, pubDate)
+      val lastBuildDate = JavaDate.parse((xmlChannel \ "lastBuildDate").text)
+      val channel = Channel(lang, title, link, description, lastBuildDate, genre)
       (xmlChannel \ "item").foreach {
         n => channel.newsCache += channel.newsRead(n.toString)
       }
@@ -49,7 +49,8 @@ case class News (
   title: String,
   link: String,
   date: Date,
-  guid: String
+  channel: model.Channel
 ) extends model.News {
+  def guid = link
   def contentString = title
 }

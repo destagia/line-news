@@ -8,6 +8,7 @@ import scala.concurrent.Future
 import scala.concurrent.Future._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.xml.XML
+import model._
 
 abstract class ChannelGetter[C <: model.Channel] {
 
@@ -17,6 +18,8 @@ abstract class ChannelGetter[C <: model.Channel] {
 
   // ニュースの名前を定義する
   def entryName: String
+
+  def genre: model.Genre
 
   // キャッシュの更新を許可する間隔(5分)
   val updateDuration = 5 * 60 * 1000
@@ -81,7 +84,7 @@ abstract class ChannelGetter[C <: model.Channel] {
   */
   private def requestChannel[A](afterGet: C => A)(implicit reader: XMLReader[C]) =
     for {
-      channel <- requestChannelXML(reader.read)
+      channel <- requestChannelXML(reader.read(genre))
     }
     yield afterGet(channel)
 

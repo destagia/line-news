@@ -28,7 +28,7 @@ class Application extends Controller {
             (relatives <- n.relatives)
           yield
             n match {
-              case model.livedoor.News(title, link, description, _, date, _) =>
+              case model.livedoor.News(title, link, description, _, date, _, _) =>
                 Ok(views.html.newsOne(n.title, description + "(" + n.id + ")", link, relatives))
               case _ =>
                 NotFound("this is not livedoor news")

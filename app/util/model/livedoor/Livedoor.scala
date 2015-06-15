@@ -11,12 +11,13 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
 case class Channel (
-  val lang: Language,
-  val title: String,
-  val link: String,
-  val generator: String,
-  val description: String,
-  val lastBuildDate: Date
+  lang: Language,
+  title: String,
+  link: String,
+  generator: String,
+  description: String,
+  lastBuildDate: Date,
+  genre: model.Genre
 ) extends model.Channel {
   def toHTML = {
     title + "\n" + newsCache.mkString(", ")
@@ -30,12 +31,12 @@ case class Channel (
     val mobile = (news \ "mobile").text.toInt
     val date = util.JavaDate.parse((news \ "pubDate").text)
     val guid = (news \ "guid").text
-    News(title, link, description, mobile, date, guid)
+    News(title, link, description, mobile, date, guid, this)
   }
 }
 object Channel {
   implicit val reader = new XMLReader[Channel]  {
-    def read(s: String): Channel = {
+    def read(genre: model.Genre)(s: String): Channel = {
       val xmlChannel = XML.loadString(s) \ "channel"
       val lang = Language.parse((xmlChannel \ "language").text)
       val title = (xmlChannel \ "title").text
@@ -43,7 +44,7 @@ object Channel {
       val generator = (xmlChannel \ "generator").text
       val description = (xmlChannel \ "description").text
       val lastBuildDate = JavaDate.parse((xmlChannel \ "lastBuildDate").text)
-      val channel = Channel(lang, title, link, generator, description, lastBuildDate)
+      val channel = Channel(lang, title, link, generator, description, lastBuildDate, genre)
       (xmlChannel \ "item").foreach {
         n => channel.newsCache += channel.newsRead(n.toString())
       }
@@ -58,7 +59,8 @@ case class News (
   description: String,
   mobile: Int,
   date: Date,
-  guid: String
+  guid: String,
+  channel: model.Channel
 ) extends model.News {
   def contentString =
     title + "\n" + XML.loadString("<xml>" + description + "</xml>").text
