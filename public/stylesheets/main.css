@@ -1,0 +1,107 @@
+body {
+  margin: 0px;
+}
+
+a {
+  text-decoration: none;
+}
+
+main a:link {
+  color: rgba(112, 149, 212, 1);
+}
+
+main a:visited {
+  color: rgba(112, 149, 212, 1);
+}
+
+main a:hover {
+  color: rgba(153, 149, 212, 1);
+  text-decoration: blink;
+}
+
+main a:active {
+  color: rgba(112, 149, 212, 1);
+}
+
+h1 {
+  margin: 3px 0px 3px 0px;
+  height: 40px;
+}
+
+h1 img {
+  width: 250px;
+}
+
+header {
+  border-top: 3px solid rgba(101, 110, 164, 1);
+  border-bottom: 1px solid rgba(83, 78, 78, 0.2);
+  background-color: #fff;
+  overflow: hidden;
+}
+
+header h1, header p {
+  float: left;
+  font-size: 14px;
+  color: #aaaaaa;
+}
+
+header p {
+  margin: 13px 0px;
+}
+
+nav {
+  margin-top: 10px;
+}
+
+nav ul {
+  text-align: center;
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+footer ul {
+  padding: 0px;
+}
+
+nav ul li, footer ul li {
+  display: inline-block;
+  text-align: center;
+}
+
+nav ul li {
+  padding: 10px 20px 10px 20px;
+}
+
+footer ul li {
+  padding: 0px 20px 0px 20px;
+}
+
+nav ul li a {
+  color: #aaa;
+}
+
+footer ul li a {
+  color: #fff;
+}
+
+main {
+  width: 900px;
+  padding: 10px 40px 10px 40px;
+  margin-top: 50px;
+  margin-right: auto;
+  margin-left: auto;
+  background-color: #fcfcfc;
+}
+
+footer {
+  margin-top: 50px;
+  padding: 20px 0px 20px 0px;
+  color: #ddd;
+  text-align: center;
+  font-size: 14px;
+}
+
+#copyright {
+  margin-top: 40px;
+}
