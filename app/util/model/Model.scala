@@ -96,11 +96,11 @@ trait News {
     util.KeyPhrase.get(contentString)
 
   lazy val similarKeys = for {
-      keys <- keyPhrase.map(_.take(5).map(_.keyPhrase))
-      similars <- util.Hatena.getSimilar(keys.toArray)
-      _ <- Future(println(similars ++ keys))
+      keys <- keyPhrase.map(_.map(_.keyPhrase))
+      key5 = keys.take(5)
+      similars <- util.Hatena.getSimilar(key5.toArray)
     }
-    yield keys ++ similars
+    yield key5 ++ similars ++ keys.drop(5)
 
   lazy val relatives = for {
       keys <- similarKeys

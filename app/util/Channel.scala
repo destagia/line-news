@@ -22,9 +22,10 @@ object Channel {
       cs <- filterChannelsBy(target.channel.genre)
     }
     yield {
+      val news = cs.map(_.getAllNews).foldRight(List[model.News]())(_ ++ _)
       val buffer = ListBuffer[model.News]()
       keys.foreach { key =>
-        cs.map(_.getAllNews).foldRight(List[model.News]())(_ ++ _).foreach { n =>
+        news.foreach { n =>
           if ( buffer.size < 3
             && n.id != target.id
             && n.link != target.link
