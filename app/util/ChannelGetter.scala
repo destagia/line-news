@@ -136,31 +136,31 @@ object Channel {
     def endPoint = "http://news.livedoor.com/topics/rss/"
   }
   val Livedoor = Map(
-    "top" -> new LivedoorGetter { def entryName = "top.xml" },
-    "dom" -> new LivedoorGetter { def entryName = "dom.xml" },
-    "int" -> new LivedoorGetter { def entryName = "int.xml" },
-    "eco" -> new LivedoorGetter { def entryName = "eco.xml" },
-    "ent" -> new LivedoorGetter { def entryName = "ent.xml" },
-    "spo" -> new LivedoorGetter { def entryName = "spo.xml" },
-    "52" -> new LivedoorGetter { def entryName = "52.xml" },
+    "top"     -> new LivedoorGetter { def entryName = "top.xml" },
+    "dom"     -> new LivedoorGetter { def entryName = "dom.xml" },
+    "int"     -> new LivedoorGetter { def entryName = "int.xml" },
+    "eco"     -> new LivedoorGetter { def entryName = "eco.xml" },
+    "ent"     -> new LivedoorGetter { def entryName = "ent.xml" },
+    "spo"     -> new LivedoorGetter { def entryName = "spo.xml" },
+    "52"      -> new LivedoorGetter { def entryName = "52.xml" },
     "gourmet" -> new LivedoorGetter { def entryName = "gourmet.xml" },
-    "love" -> new LivedoorGetter { def entryName = "love.xml" },
-    "trend" -> new LivedoorGetter { def entryName = "trend.xml" }
+    "love"    -> new LivedoorGetter { def entryName = "love.xml" },
+    "trend"   -> new LivedoorGetter { def entryName = "trend.xml" }
   )
 
   abstract class YahooGetter extends ChannelGetter[yahoo.Channel] {
     def endPoint = "http://rss.dailynews.yahoo.co.jp/fc/"
   }
   val Yahoo = Map(
-    "top" -> new YahooGetter { def entryName = "rss.xml" },
-    "domestic" -> new YahooGetter { def entryName = "domestic/rss.xml" },
-    "world" -> new YahooGetter { def entryName = "world/rss.xml" },
+    "top"           -> new YahooGetter { def entryName = "rss.xml" },
+    "domestic"      -> new YahooGetter { def entryName = "domestic/rss.xml" },
+    "world"         -> new YahooGetter { def entryName = "world/rss.xml" },
     "entertainment" -> new YahooGetter { def entryName = "entertainment/rss.xml" },
-    "sports" -> new YahooGetter { def entryName = "sports/rss.xml" },
-    "computer" -> new YahooGetter { def entryName = "computer/rss.xml" },
-    "local" -> new YahooGetter { def entryName = "local/rss.xml" },
-    "economy" -> new YahooGetter { def entryName = "economy/rss.xml" },
-    "science" -> new YahooGetter { def entryName = "science/rss.xml" }
+    "sports"        -> new YahooGetter { def entryName = "sports/rss.xml" },
+    "computer"      -> new YahooGetter { def entryName = "computer/rss.xml" },
+    "local"         -> new YahooGetter { def entryName = "local/rss.xml" },
+    "economy"       -> new YahooGetter { def entryName = "economy/rss.xml" },
+    "science"       -> new YahooGetter { def entryName = "science/rss.xml" }
   )
 }
 
