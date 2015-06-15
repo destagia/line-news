@@ -122,6 +122,20 @@ object Channel {
           n => y.map(_.guid).contains(n.guid))
         ).getOrElse(Nil) ++ y
       }
+    } flatMap { l =>
+      Yahoo.foldRight(Future(List[model.News]())){(a, b) =>
+        for {
+          x <- a._2.get
+          y <- b
+        }
+        yield {
+          x.map(_.getAllNews.filterNot(
+            n => y.map(_.guid).contains(n.guid))
+          ).getOrElse(Nil) ++ y
+        }
+      } map { y =>
+        l ++ y
+      }
     }
 
   abstract class LivedoorGetter extends ChannelGetter[livedoor.Channel] {
@@ -141,12 +155,12 @@ object Channel {
   )
 
   abstract class YahooGetter extends ChannelGetter[yahoo.Channel] {
-    def endPoint = "http://rss.dailynews.yahoo.co.jp/fc"
+    def endPoint = "http://rss.dailynews.yahoo.co.jp/fc/"
   }
-  val Yahoo = Map {
-    "top" -> new YahooGetter { def entryName = "rss.xml" }
-    "domestic" -> new YahooGetter { def entryName = "domestic/rss.xml" }
+  val Yahoo = Map(
+    "top" -> new YahooGetter { def entryName = "rss.xml" },
+    "domestic" -> new YahooGetter { def entryName = "domestic/rss.xml" },
     "world" -> new YahooGetter { def entryName = "world/rss.xml" }
-  }
+  )
 }
 
