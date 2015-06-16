@@ -8,4 +8,4 @@ ADD ./ /root
 EXPOSE 40005
 WORKDIR /root
 
-CMD ./target/universal/stage/bin/line-news -Dhttp.port=80 -J-Xms128M -J-Xmx512m -J-server
+CMD ./target/universal/stage/bin/line-news -Dhttp.port=80 -J-server
