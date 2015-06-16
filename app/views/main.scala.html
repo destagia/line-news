@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String)(head: Html)(content: Html)
 
 <!DOCTYPE html>
 
@@ -9,21 +9,14 @@
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")">
         <script src="@routes.Assets.versioned("javascripts/hello.js")" type="text/javascript"></script>
         <style>
-          body {
-            background-image: url("@routes.Assets.versioned("images/white-noise.jpg")");
-          }
-          footer {
-            background-image: url("@routes.Assets.versioned("images/dark-blue-noise.jpg")");
-          }
-          #top a {
-            color: rgba(101, 110, 164, 1);
-          }
-          #top {
-            border-bottom:2px solid rgba(83, 78, 78, 1);
+          #upper {
+            background-color: rgb(245, 245, 245);
           }
         </style>
+        @head
     </head>
     <body>
+      <section id="upper">
         <header>
           <h1>
             <img src="@routes.Assets.versioned("images/livedoormatome_logo.png")" alt="Livedoorまとめ！" />
@@ -31,36 +24,17 @@
           <p>ライブドアニュースから最新情報をお届けします。</p>
         </header>
         <nav>
-          <ul>
-            <li id="top"><a href="/top">トップ</a></li>
-            <li id="dom"><a href="/dom">国内</a></li>
-            <li id="eco"><a href="/eco">IT経済</a></li>
-            <li id="int"><a href="/int">海外</a></li>
-            <li id="ent"><a href="/ent">エンタメ</a></li>
-            <li id="spo"><a href="/spo">スポーツ</a></li>
-            <li id="52"><a href="/52">映画</a></li>
-            <li id="gourmet"><a href="/gourmet">グルメ</a></li>
-            <li id="love"><a href="/love">女子</a></li>
-            <li id="trend"><a href="/trend">トレンド</a></li>
-          </ul>
+          @views.html.nav()
         </nav>
         <main>
           @content
         </main>
+      </section>
+      <section id="lower">
         <footer>
-          <ul>
-            <li><a href="/top">トップ</a></li>
-            <li><a href="/dom">国内</a></li>
-            <li><a href="/eco">IT経済</a></li>
-            <li><a href="/int">海外</a></li>
-            <li><a href="/ent">エンタメ</a></li>
-            <li><a href="/spo">スポーツ</a></li>
-            <li><a href="/52">映画</a></li>
-            <li><a href="/gourmet">グルメ</a></li>
-            <li><a href="/love">女子</a></li>
-            <li><a href="/trend">トレンド</a></li>
-          </li>
+          @views.html.nav()
           <p id="copyright">CopyRight miyatin All Right Reserved 2015</p>
         </footer>
-    </body>
+      </section>
+  </body>
 </html>

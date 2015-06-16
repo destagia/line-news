@@ -91,19 +91,19 @@ object Channel {
   }
 
   abstract class LivedoorGetter extends ChannelGetter[livedoor.Channel] {
-    def endPoint = "http://news.livedoor.com/topics/rss/"
+    def endPoint = "http://news.livedoor.com/"
   }
   val Livedoor = Map(
-    "top"     -> new LivedoorGetter { def entryName = "top.xml" ; def genre = トップ},
-    "dom"     -> new LivedoorGetter { def entryName = "dom.xml" ; def genre = 国内 },
-    "int"     -> new LivedoorGetter { def entryName = "int.xml" ; def genre = 海外 },
-    "eco"     -> new LivedoorGetter { def entryName = "eco.xml" ; def genre = 経済 },
-    "ent"     -> new LivedoorGetter { def entryName = "ent.xml" ; def genre = 芸能 },
-    "spo"     -> new LivedoorGetter { def entryName = "spo.xml" ; def genre = スポーツ },
-    "52"      -> new LivedoorGetter { def entryName = "52.xml" ; def genre = 映画 },
-    "gourmet" -> new LivedoorGetter { def entryName = "gourmet.xml" ; def genre = グルメ },
-    "love"    -> new LivedoorGetter { def entryName = "love.xml" ; def genre = 女子 },
-    "trend"   -> new LivedoorGetter { def entryName = "trend.xml" ; def genre = トレンド }
+    "dom"     -> new LivedoorGetter { def entryName = "topics/rss/dom.xml" ; def genre = 国内 },
+    "int"     -> new LivedoorGetter { def entryName = "topics/rss/int.xml" ; def genre = 海外 },
+    "eco"     -> new LivedoorGetter { def entryName = "topics/rss/eco.xml" ; def genre = 経済 },
+    "ent"     -> new LivedoorGetter { def entryName = "topics/rss/ent.xml" ; def genre = 芸能 },
+    "spo"     -> new LivedoorGetter { def entryName = "topics/rss/spo.xml" ; def genre = スポーツ },
+    "movie"   -> new LivedoorGetter { def entryName = "rss/summary/52.xml" ; def genre = 映画 },
+    "gourmet" -> new LivedoorGetter { def entryName = "topics/rss/gourmet.xml" ; def genre = グルメ },
+    "love"    -> new LivedoorGetter { def entryName = "topics/rss/love.xml" ; def genre = 女子 },
+    "trend"   -> new LivedoorGetter { def entryName = "topics/rss/trend.xml" ; def genre = トレンド },
+    "top"     -> new LivedoorGetter { def entryName = "topics/rss/top.xml" ; def genre = トップ}
   )
 
   abstract class YahooNewsGetter extends ChannelGetter[yahoo.Channel] {
@@ -113,12 +113,14 @@ object Channel {
     "san-dom" -> new YahooNewsGetter { def entryName = "san-dom.xml" ; def genre = 国内 },
     "nishinp-dom" -> new YahooNewsGetter { def entryName = "nishinp-dom.xml" ; def genre = 国内 },
     "zdn-dom" -> new YahooNewsGetter { def entryName = "zdn_mkt-dom.xml" ; def genre = 国内 },
+    "page-dom" -> new YahooNewsGetter { def entryName = "wordleaf-dom.xml" ; def genre = 国内 },
 
     "afpbbnews" -> new YahooNewsGetter { def entryName = "afpbbnewsv-c_int.xml" ; def genre = 海外 },
     "san-int" -> new YahooNewsGetter { def entryName = "san-c_int.xml" ; def genre = 海外 },
     "asahi-int" -> new YahooNewsGetter { def entryName = "asahik-c_int.xml" ; def genre = 海外 },
     "fuji-int" -> new YahooNewsGetter { def entryName = "ykf-c_int.xml" ; def genre = 海外 },
 
+    "it" ->  new YahooNewsGetter { def entryName = "zdn_ait-c_sci.xml" ; def genre = 経済 },
     "sh_mon-bus" -> new YahooNewsGetter { def entryName = "sh_mon-bus.xml" ; def genre = 経済 },
     "asahi-bus" -> new YahooNewsGetter { def entryName = "asahik-bus.xml" ; def genre = 経済 },
     "scn-bus" -> new YahooNewsGetter { def entryName = "scn-bus.xml" ; def genre = 経済 },

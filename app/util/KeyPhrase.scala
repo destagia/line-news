@@ -28,6 +28,8 @@ object KeyPhrase {
       (XML.loadString(res.body) \ "Result").toList.map { node =>
         keyphrase.Result((node \ "Keyphrase").text, (node \ "Score").text.toInt)
       }
+    } recover {
+      case e: Exception => Nil
     }
 
 }

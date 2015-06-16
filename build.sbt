@@ -25,23 +25,5 @@ initialCommands in console := """
   import scala.concurrent.{Await, Future}
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent.duration._
-
-  val sample =
-<ResultSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:yahoo:jp:jlp:KeyphraseService"
-  xsi:schemaLocation="urn:yahoo:jp:jlp:KeyphraseService http://jlp.yahooapis.jp/KeyphraseService/V1/extract.xsd">
-  <Result>
-    <Keyphrase>東京ミッドタウン</Keyphrase>
-    <Score>100</Score>
-  </Result>
-  <Result>
-    <Keyphrase>国立新美術館</Keyphrase>
-    <Score>54</Score>
-  </Result>
-  <Result>
-    <Keyphrase>5分</Keyphrase>
-    <Score>9</Score>
-  </Result>
-</ResultSet>
-
 """
 

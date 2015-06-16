@@ -8,33 +8,31 @@ import util._
 
 class Application extends Controller {
 
-  def index = Action {
-    Ok(views.html.index())
-  }
+  def index = news("top")
 
   def news(tag: String) = Action.async {
     for {
       newsOpt <- Channel.Livedoor(tag).get
     }
     yield
-      Ok(views.html.news(newsOpt.map(_.getAllNews).getOrElse(Nil)))
+      Ok(views.html.news(tag, newsOpt.map(_.getAllNews).getOrElse(Nil)))
   }
 
   def newsOne(tag: String, id: Int) = Action.async {
-    Channel.getAllNewsFromChannel(Channel.Livedoor).flatMap { news =>
+    Channel.Livedoor(tag).get.map(_.map(_.getAllNews).getOrElse(Nil)).flatMap { news =>
       news.find(_.id == id) match {
         case Some(n) =>
           for
             (relatives <- n.relatives)
           yield
             n match {
-              case model.livedoor.News(title, link, description, _, date, _, _) =>
-                Ok(views.html.newsOne(n.title, description + "(" + n.id + ")", link, relatives))
+              case ln@model.livedoor.News(title, link, description, date, _, _) =>
+                Ok(views.html.newsOne(tag, ln, relatives))
               case _ =>
-                NotFound("this is not livedoor news")
+                NotFound(views.html.notFound())
             }
 
-        case None => Future(NotFound("not found id"))
+        case None => Future(NotFound(views.html.notFound()))
       }
     }
   }

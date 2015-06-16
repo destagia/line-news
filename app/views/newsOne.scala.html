@@ -1,10 +1,15 @@
-@(title: String, description: String, link: String, relatives: List[util.model.News])
-@main("Livedoorまとめ - " + title) {
-  <h3>@title<h3>
-  <div>@Html(description)</div>
-  <ul>
+@(tag: String, n: util.model.livedoor.News, relatives: List[util.model.News])
+@newsFrame(tag, n.title) {
+  <h3>@n.title</h3>
+  <p id="news_date">@util.JavaDate.format(n.date)</p>
+  @if(tag == "movie") {
+  <div class="zakkuri movie_content">@Html(n.description)</div>
+  } else {
+  <div class="zakkuri normal_content">@Html(n.description)</div>
+  }
+  <ul id="relative_news">
     @for(news <- relatives) {
-      <li><a href="@news.link">@{news.title}(@news.id)</a></li>
+      <li><a href="@news.link">@{news.title}</a></li>
     }
   </ul>
 }

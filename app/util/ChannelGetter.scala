@@ -39,7 +39,9 @@ abstract class ChannelGetter[C <: model.Channel] {
         saveCache(channel)
         Some(channel)
       } recover {
-        case e: Exception => None
+        case e: Exception =>
+          e.printStackTrace()
+          None
       }
   }
 
@@ -87,7 +89,6 @@ abstract class ChannelGetter[C <: model.Channel] {
       channel <- requestChannelXML(reader.read(genre))
     }
     yield afterGet(channel)
-
 
   private def saveCache(channel: C) {
     cache = Some(channel)

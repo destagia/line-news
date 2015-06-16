@@ -27,11 +27,18 @@ case class Channel (
     val news = XML.loadString(s)
     val title = (news \ "title").text
     val link = (news \ "link").text
-    val description = (news \ "description").text
-    val mobile = (news \ "mobile").text.toInt
+    val description_ = (news \ "description").text
+    val description =
+      if (genre == model.映画)
+          description_
+            .replace("-s.jpg", ".jpg")
+            .replace("<a href", "<p><a href")
+            .replace("</a>", "</a></p>")
+            .replace("全文", "全文を読む")
+      else description_
     val date = util.JavaDate.parse((news \ "pubDate").text)
     val guid = (news \ "guid").text
-    News(title, link, description, mobile, date, guid, this)
+    News(title, link, description, date, guid, this)
   }
 }
 object Channel {
@@ -43,7 +50,12 @@ object Channel {
       val link = (xmlChannel \ "link").text
       val generator = (xmlChannel \ "generator").text
       val description = (xmlChannel \ "description").text
-      val lastBuildDate = JavaDate.parse((xmlChannel \ "lastBuildDate").text)
+      val dateString = (xmlChannel \ "lastBuildDate").text
+      val lastBuildDate =
+        if (dateString != "")
+          JavaDate.parse(dateString)
+        else
+          new java.util.Date()
       val channel = Channel(lang, title, link, generator, description, lastBuildDate, genre)
       (xmlChannel \ "item").foreach {
         n => channel.newsCache += channel.newsRead(n.toString())
@@ -57,11 +69,16 @@ case class News (
   title: String,
   link: String,
   description: String,
-  mobile: Int,
   date: Date,
   guid: String,
   channel: model.Channel
 ) extends model.News {
   def contentString =
-    title + "\n" + XML.loadString("<xml>" + description + "</xml>").text
+      title + "\n" + (try {
+        XML.loadString("<xml>" + description + "</xml>").text
+      }
+      catch {
+        case e: Exception => description
+      })
+
 }

@@ -1,7 +1,7 @@
-@(news: List[util.model.News])
+@(tag: String, news: List[util.model.News])
 
-@main("ニュース一覧") {
+@newsFrame(tag, "ニュース一覧") {
   @for(n <- news) {
-    <h4><a href="/news/@n.id">@n.title</a></h4>
+    <h4><a href="/@tag/@n.id">@n.title</a></h4>
   }
 }

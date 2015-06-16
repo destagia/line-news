@@ -1,0 +1,17 @@
+@(tag: String, title: String)(content: Html)
+
+@main(title){
+  @Html(s"""
+    <style>
+      nav #${tag} a {
+        color: rgba(101, 110, 164, 1);
+      }
+      nav #${tag} {
+        border-bottom:2px solid rgba(83, 78, 78, 1);
+      }
+
+    </style>
+  """)
+}{
+  @content
+}
