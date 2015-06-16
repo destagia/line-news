@@ -1,0 +1,4 @@
+sgoitemgatya:
+  build: .
+  ports:
+    - "40005:80"
