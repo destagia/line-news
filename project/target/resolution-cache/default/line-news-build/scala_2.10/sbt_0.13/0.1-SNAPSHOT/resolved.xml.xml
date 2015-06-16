@@ -4,7 +4,7 @@
 		module="line-news-build"
 		revision="0.1-SNAPSHOT"
 		status="integration"
-		publication="20150616163146"
+		publication="20150616210149"
 		e:sbtVersion="0.13" e:scalaVersion="2.10"
 	>
 		<description>

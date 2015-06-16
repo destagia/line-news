@@ -64,10 +64,10 @@ trait Channel {
             else
               List(fNews)
           }
-          else
-            Nil
+          else Nil
       }
     }
+
     lazy val nodes = { xml \ "item" }
     // 先頭のguidから新しい分だけをキャッシュに追加する仕組み
     newsCache.headOption map { news =>
