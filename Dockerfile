@@ -5,7 +5,7 @@ MAINTAINER Shohei Miyashita <kei@kamasu.jp>
 ADD ./ /root
 
 # run play
-EXPOSE 49180
+EXPOSE 40005
 WORKDIR /root
 
-CMD ./target/universal/stage/bin/sgoitemdata -Dhttp.port=80 -J-Xms128M -J-Xmx512m -J-server
+CMD ./target/universal/stage/bin/line-news -Dhttp.port=80 -J-Xms128M -J-Xmx512m -J-server

@@ -1,4 +1,4 @@
-sgoitemgatya:
+front:
   build: .
   ports:
     - "40005:80"
