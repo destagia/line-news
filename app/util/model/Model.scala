@@ -40,6 +40,7 @@ case class ChannelSet (channel: Channel, genre: Genre)
 trait Channel {
   // ニュースのキャッシュ
   val newsCache: MList[News] = MList[News]()
+  @volatile var checking: Boolean = false
 
   def toHTML: String
   def genre: Genre
@@ -52,7 +53,8 @@ trait Channel {
 
   def getAllNews: List[News] = newsCache.toList
 
-  def updateNewsCache(xml: NodeSeq) = {
+  def updateNewsCache(xml: NodeSeq) = if (!checking) {
+    checking = true
     def newNews(guid: String, nodes: NodeSeq): List[News] = {
       nodes.headOption match {
         case None => Nil
@@ -67,14 +69,14 @@ trait Channel {
           else Nil
       }
     }
-
     lazy val nodes = { xml \ "item" }
     // 先頭のguidから新しい分だけをキャッシュに追加する仕組み
     newsCache.headOption map { news =>
       val latest = newNews(news.guid, nodes)
-      latest.foreach(_ +=: newsCache)
+      latest.reverse.foreach(_ +=: newsCache)
       newsCache.trimEnd(latest.size)
     }
+    checking = false
   }
 }
 
