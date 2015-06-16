@@ -1,5 +1,8 @@
 logs
-target
+/target/*
+!target/universal
+/target/universal/*
+!target/universal/stage
 /.idea
 /.idea_modules
 /.classpath
