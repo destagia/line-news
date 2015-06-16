@@ -71,7 +71,9 @@ trait Channel {
     lazy val nodes = { xml \ "item" }
     // 先頭のguidから新しい分だけをキャッシュに追加する仕組み
     newsCache.headOption map { news =>
-      newNews(news.guid, nodes).foreach(_ +=: newsCache)
+      val latest = newNews(news.guid, nodes)
+      latest.foreach(_ +=: newsCache)
+      newsCache.trimEnd(latest.size)
     }
   }
 }

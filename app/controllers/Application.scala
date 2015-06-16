@@ -8,6 +8,8 @@ import util._
 
 class Application extends Controller {
 
+
+
   def index = news("top")
 
   def news(tag: String) = Action.async {
